@@ -53,9 +53,9 @@ def get_ts(latlon, source, authen, outdir, verbose=True):
     Returns
     ----------
     eta:
-        
+        numpy array of wave amplitude in meters
     time:
-        
+        numpy array of time after earthquake corresponding to each entry in eta in minutes.
     '''
     
     # Base URL for web api
