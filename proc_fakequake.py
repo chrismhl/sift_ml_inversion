@@ -50,7 +50,7 @@ def proc_wts(sources, rnums, outdir):
     not_used:
         List of runs where inversions do not exist
     inversions:
-        np array of 
+        npy array of unit source weights [number of realizations x number of sources]
     '''
     
     # Determine how many runs there are
@@ -97,23 +97,23 @@ def proc_wts(sources, rnums, outdir):
     
 def proc_data(rnums, gaugenos, outdir = 'fq_time_series', npts = 359):
     '''
-    Converts .mat to .npy. FQ data for input gauges
+    Converts fakequake time series used as input to the NN from .mat to .npy. 
     Parameters
     ----------
-    rnums:
-        
-    gaugenos:
-        
+    rnums: 
+        List of run numbers to convert/process
+    gaugenos: 
+        List of dart buoy gauge numbers in integer
     outdir:
-        
+        Directory containing the .mat files
     npts:
-        
+        Length of the time series.
     Returns
     ----------
     eta_all:
-        
+        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
     t_all:
-        
+        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
     '''
     
     eta_all = np.zeros((len(rnums), len(gaugenos), npts))
@@ -133,23 +133,23 @@ def proc_data(rnums, gaugenos, outdir = 'fq_time_series', npts = 359):
 
 def proc_fcast_data(rnums, gauges, outdir = 'fq_gauge_waveforms', npts = 1441):
     '''
-    Converts .mat to .npy. Extra gauges for result comparison.
+    Converts extra fakequake time series used for results comparison from .mat to .npy. 
     Parameters
     ----------
-    rnums:
-        
-    gaugenos:
-        
+    rnums: 
+        List of run numbers to convert/process
+    gaugenos: 
+        List of dart buoy gauge numbers in integer
     outdir:
-        
+        Directory containing the .mat files
     npts:
-        
+        Length of the time series.
     Returns
     ----------
     eta_all:
-        
+        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
     t_all:
-        
+        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
     '''
     
     eta_all = np.zeros((len(rnums), len(gauges), npts))
@@ -168,16 +168,16 @@ def proc_fcast_data(rnums, gauges, outdir = 'fq_gauge_waveforms', npts = 1441):
 
 def check_thresh(etas, thresh):
     '''
-    Check max eta at all 3 gauges for a given realization
+    Check max eta at all 3 gauges for a given realization and threshold
     Parameters
     ----------
-    etas:
-        
+    etas: 
+        2-D npy array containing the wave amplitudes [number of gauges x ts length]
     thresh:
-        
+        Threshold to check realization against.
     Returns
     ----------
-        Boolean...
+        True if threshold is met at any 3 gauges, False if it is not
         
     '''
     for i in range(etas.shape[0]):
@@ -188,17 +188,17 @@ def check_thresh(etas, thresh):
     
 def out_npy(eta,t, name = 'dart', savedir = 'npy'):
     '''
-    Outputs .npy to a file locally. Redo naming 
+    Outputs .npy to a file locally.
     Parameters
     ----------
     eta:
-        
+        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
     t:
-    
+        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
     name:
-    
+        string used in the file name to distinguish between forecast and input time series. 
     savedir:
-    
+        Filepath to the directory the arrays are saved to.
     '''
     if not os.path.isdir(savedir):
         os.mkdir(savedir)
@@ -208,6 +208,21 @@ def out_npy(eta,t, name = 'dart', savedir = 'npy'):
 
 # Create indices for training and test sets, need to also add validation    
 def shuffle_data(runs, train_size, test_size, seed, inddir = 'indices'):
+    '''
+    Generates training, validation, and testing sets and outputs run numbers and indices for each set.
+    Parameters
+    ----------
+    runs:
+        List of run numbers used.
+    train_size:
+        fraction used for training set
+    test_size
+        fraction used for testing set
+    seed:
+        random seed used to shuffle data
+    inddir:
+        Filepath to the directory the .txt files are saved to
+    '''
     np.random.seed(seed)
     set_names = ['train','test']
     dtype = ['index', 'runs']
@@ -317,7 +332,7 @@ if __name__ == "__main__":
     
     shuffle_data(runs_u,tr_size, ts_size,rseed)
     
-    np.save(r'npy\fq_yong_inv_best.npy',invs)
+    np.save(os.path.join('npy','fq_yong_inv_best.npy'),invs)
     out_npy(eta,time)
     out_npy(eta_f,time_f, name = 'fcast', savedir = 'npy')
     
