@@ -68,7 +68,7 @@ python plot_dart_wts.py
 Example of resulting plots shown below,
 ![dart](/images/ml_inv_run1267.png)
 
-To plot the comparison of the results at the forecast points run including the scatter plot,
+To plot the comparison of the results at the forecast points run including the scatter plot (one is made for each dataset),
 ```
 python plot_forecast_sift.py
 ```
