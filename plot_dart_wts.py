@@ -135,7 +135,8 @@ def plot_subfaults(ax, slips, subfault, lat, title):
 
 if __name__ == "__main__":
     cmap_slip = plt.cm.jet # set colormap for slip plot
-    outdir = 'conv_plots_31src_45_300' #sources, time window, epochs
+    twin = 45 # time window in minutes
+    outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
     savedir = os.path.join(outdir,'dart')
     dart = ['46404', '46407', '46419'] 
     
