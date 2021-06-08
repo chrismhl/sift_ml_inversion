@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
-from scipy.optimize import lsq_linear
 from sklearn.metrics import explained_variance_score
 
 # Removing the plot for the SJdF point would output a warning
@@ -70,7 +69,8 @@ def get_max(arr):
 
 if __name__ == "__main__":
     # Directory to Save plots in
-    outdir = r"conv_plots_31src_45_300\fcast"
+    outdir = "conv_plots_31src_45_300"
+    savedir = os.path.join(outdir,'fcast')
 
     # load unit source dataframes
     dfd = 'unit_src_ts'
@@ -106,12 +106,15 @@ if __name__ == "__main__":
     sets = ['test', 'train','valid']
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
+        
+    if not os.path.isdir(savedir):
+        os.mkdir(savedir)
     
     for s, setn in enumerate(sets):
         
-        savedir = os.path.join(outdir,setn)
-        if not os.path.isdir(savedir):
-            os.mkdir(savedir)
+        plotdir = os.path.join(savedir,setn)
+        if not os.path.isdir(plotdir):
+            os.mkdir(plotdir)
         
         ind_tmp = index[s]
         runs_tmp = runs[s]
@@ -217,7 +220,7 @@ if __name__ == "__main__":
         fig.delaxes(axs[3,1])
         fig.show() # not sure if i need this in a script
         plt.tight_layout()
-        plt.savefig(os.path.join(outdir, 'scatter_%s.png' % setn))
+        plt.savefig(os.path.join(savedir, 'scatter_%s.png' % setn))
         fig.clear()
         plt.close(fig)
 
@@ -267,6 +270,6 @@ if __name__ == "__main__":
             fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
             fname = 'fq%s_forecast.png' % str(rnum).zfill(6)
-            plt.savefig(os.path.join(savedir, fname))
+            plt.savefig(os.path.join(plotdir, fname))
             fig.clear()
             plt.close(fig)

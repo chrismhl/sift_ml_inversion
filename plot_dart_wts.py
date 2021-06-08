@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
-from scipy.optimize import lsq_linear
 from sklearn.metrics import explained_variance_score
 
 import matplotlib.colors as mcolors
@@ -136,9 +135,8 @@ def plot_subfaults(ax, slips, subfault, lat, title):
 
 if __name__ == "__main__":
     cmap_slip = plt.cm.jet # set colormap for slip plot
-    twin = 45 # Time window used
-    n_sources = 31 # number of unit sources
-    outdir = r'conv_plots_%ssrc_%s_300\dart' % (str(n_sources),str(twin)) #outer directory to save to
+    outdir = 'conv_plots_31src_45_300' #sources, time window, epochs
+    savedir = os.path.join(outdir,'dart')
     dart = ['46404', '46407', '46419'] 
     
     # load unit source dataframes
@@ -193,9 +191,11 @@ if __name__ == "__main__":
     
     if not os.path.isdir(outdir):
             os.mkdir(outdir)
+    if not os.path.isdir(savedir):
+            os.mkdir(savedir)
     
     for s, name in enumerate(sets):
-        plotdir = os.path.join(outdir,name)
+        plotdir = os.path.join(savedir,name)
         
         ind_tmp = index[s]
         runs_tmp = runs[s]
