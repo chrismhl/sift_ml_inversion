@@ -66,12 +66,15 @@ To plot the comparison of the results at the DART buoys run,
 python plot_dart_wts.py
 ```
 Example of resulting plots shown below,
+![dart](/images/ml_inv_run1267.png)
 
 To plot the comparison of the results at the forecast points run including the scatter plot,
 ```
 python plot_forecast_sift.py
 ```
 Example of resulting plots shown below,
+![scatter](/images/scatter_test.png)
 
+![fcast](/images/fq001267_forecast.png)
 
 Note that ``outdir`` in both scripts must be the same. If the script is plotting the wrong things then first check that the order of the unit sources, DART buoys, and forecast gauges is consistent among all scripts
