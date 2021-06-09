@@ -2,6 +2,7 @@ import requests
 import os
 import numpy as np
 import pandas as pd
+import sys
 
 def build_url(sources, weights, latlon, base_url):
     '''
@@ -160,8 +161,8 @@ if __name__ == "__main__":
     # DART buoy names
     dart = ['46404', '46407', '46419']
     
-    # Extra forecast points, NOTE CSZ DOES NOT RETURN ANYTHING
-    extra_forecast = ['anch1', 'anch2', 'csz', 'dart51407', 'hilo1',\
+    # Extra forecast points, omitted 'csz' point for now
+    extra_forecast = ['anch1', 'anch2', 'dart51407', 'hilo1',\
                   'hilo2', 'sendai1', 'sendai2']
     
     # lat long for buoys 
@@ -177,6 +178,9 @@ if __name__ == "__main__":
     # SIFT user and password:
     authen = tuple(open('authen.txt').readlines()[0].split(',')[:2])
     
+    if len(dart+extra_forecast) != len(latlong + latlong_f):
+        sys.exit("Error: Number of points and coordinates do not match")
+    
     # Get unit source and output as pd DataFrame
     for n,ltlng in enumerate(latlong + latlong_f):
         buoys = dart+extra_forecast
@@ -184,15 +188,19 @@ if __name__ == "__main__":
         t_dict = {}
         
         for src in sources:
-            eta, t = get_ts(ltlng, src, authen, outdir, verbose=False)
+            eta, t = get_ts(ltlng, src, authen, outdir)
             
             eta_dict[src] = eta
             t_dict[src] = t
        
         eta_df = pd.DataFrame(eta_dict)
         t_df = pd.DataFrame(t_dict)
+        fname_e = 'eta_%s.csv' % buoys[n]
+        fname_t = 't_%s.csv' % buoys[n]
         
-        eta_df.to_csv(os.path.join(outdir,'eta_%s.csv' % buoys[n])\
+        eta_df.to_csv(os.path.join(outdir,fname_e)\
                       , header=True, index=False)
-        t_df.to_csv(os.path.join(outdir,'t_%s.csv' % buoys[n])\
-                    , header=True, index=False)
+        print('Saving %s to %s' % (fname_e, outdir))
+        t_df.to_csv(os.path.join(outdir,fname_t)\
+                   , header=True, index=False)
+        print('Saving %s to %s' % (fname_t, outdir))
