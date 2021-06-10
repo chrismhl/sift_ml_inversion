@@ -8,7 +8,7 @@ A collection of scripts used to,
 * Training and predicting with a 1D convolutional neural network
 * Plotting results
 
-for unit source inversions as a part of NCTR's SIFT(Short-term Inundation Forecasting for Tsunamis) system.
+for unit source inversions as a part of NCTR's SIFT (Short-term Inundation Forecasting for Tsunamis) system. Additional documentation can be found in the addtional_docs directory.
 
 ## Requirements
 The Python scripts were made using the following,
@@ -29,7 +29,7 @@ The following were used **only** for plotting results,
 
 ## Usage
 
-The scripts will require the .mat files of the FQ inversions and time series and are not included in this repo.
+The scripts **require* the .mat files of the FQ inversions and time series to run and are not included in this repo.
 
 ### Downloading the unit sources
 
