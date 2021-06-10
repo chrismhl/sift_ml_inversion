@@ -29,7 +29,7 @@ The following were used **only** for plotting results,
 
 ## Usage
 
-The scripts **require** the .mat files of the FQ inversions and time series to run and are not included in this repo.
+The scripts **require** the .mat files of the FQ inversions and time series to run and are not included in this repo. The latitude of the centroid of slip for each fakequake realization is required for ``plot_dart_wts.py`` and is also not included in this repo.
 
 ### Downloading the unit sources
 
