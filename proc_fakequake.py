@@ -188,7 +188,7 @@ def check_thresh(etas, thresh):
     
 def out_npy(eta,t, name = 'dart', savedir = 'npy'):
     '''
-    Outputs .npy to a file locally.
+    Outputs the wave amplitude and time increments as separate .npy files locally.
     Parameters
     ----------
     eta:
@@ -332,8 +332,10 @@ if __name__ == "__main__":
     
     shuffle_data(runs_u,tr_size, ts_size,rseed)
     
-    np.save(os.path.join('npy','fq_yong_inv_best.npy'),invs)
     out_npy(eta,time)
     out_npy(eta_f,time_f, name = 'fcast', savedir = 'npy')
+    
+    #note the npy directory is created in out_npy()
+    np.save(os.path.join('npy','fq_yong_inv_best.npy'),invs) 
     
 
