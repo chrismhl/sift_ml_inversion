@@ -1,4 +1,4 @@
-# Unit Source Weight Inversions using Deep Learning
+# Deep Learning for SIFT Unit Source Inversions
 
 Author: Christopher Liu
 
