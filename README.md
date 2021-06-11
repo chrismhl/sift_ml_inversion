@@ -15,12 +15,12 @@ Work was supported in part by the CICOES Graduate Student Fellowship
 
 ## Introduction 
 This repository contains a collection of scripts used to,
-* Process and download time series data for the fakequakes and unit sources
-* Generate training, validation, and testing data sets.
-* Training and predicting with a 1D convolutional neural network
-* Plotting results
+* Process and download time series data for the fakequakes and unit sources,
+* Generate training, validation, and testing data sets,
+* Training and predicting with a 1D convolutional neural network,
+* Plotting results,
 
-for unit source inversions as a part of NCTR's Short-term Inundation Forecasting for Tsunamis (SIFT) system. Additional documentation can be found in the addtional_docs directory.
+for unit source inversions as a part of NCTR's Short-term Inundation Forecasting for Tsunamis (SIFT) system. Additional documentation can be found in the additional_docs directory.
 
 ## Requirements
 The Python scripts were made using the following,
