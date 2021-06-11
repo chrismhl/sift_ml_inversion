@@ -18,7 +18,7 @@ The Python scripts were made using the following,
 * ``numpy``
 * ``os``
 * ``pandas``
-* ``pytorch 1.6,0``
+* ``pytorch 1.6.0``
 * ``requests``
 * ``scipy``
 * ``sys``
