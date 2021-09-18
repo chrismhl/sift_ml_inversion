@@ -13,15 +13,15 @@ def conv_name(name, new = True):
     Converts names of the subfaults between the new and old scheme.
     Parameters
     ----------
-    name:
-        String of the name you are converting
-    new:
+    name: str
+        Source name to be converted
+    new: bool, default = True
         Set to True if you are converting from the new format to the old and False
         for the opposite.
     Returns
     ----------
-    newname:
-        String of the converted name
+    newname: str
+        Converted name
     '''
     
     if new:
@@ -37,20 +37,20 @@ def proc_wts(sources, rnums, outdir):
     inversions using the old naming format and outputs a single .npy file. 
     Parameters
     ----------
-    sources: 
-        List of strs of unit source names(old format)
-    rnums: 
-        np array of run numbers to use
-    outdir:
+    sources: list
+        Strings of unit source names(old format)
+    rnums: npy array
+        Run numbers to process
+    outdir: str
         filepath of directory containing the .mat files
     Returns
     ----------
-    runs_used:
-        List of runs where inversions exist
-    not_used:
-        List of runs where inversions do not exist
-    inversions:
-        npy array of unit source weights [number of realizations x number of sources]
+    runs_used: list
+        Runs where inversions exist
+    not_used: list
+        Runs where inversions do not exist
+    inversions: npy array
+        Unit source weights [number of realizations x number of sources]
     '''
     
     # Determine how many runs there are
@@ -100,20 +100,20 @@ def proc_data(rnums, gaugenos, outdir = 'fq_time_series', npts = 359):
     Converts fakequake time series used as input to the NN from .mat to .npy. 
     Parameters
     ----------
-    rnums: 
-        List of run numbers to convert/process
-    gaugenos: 
-        List of dart buoy gauge numbers in integer
-    outdir:
+    rnums: list
+        Run numbers to convert/process
+    gaugenos: list
+        Integer DART buoy gauge numbers 
+    outdir: str, default='fq_time_series'
         Directory containing the .mat files
-    npts:
+    npts: int, default=359
         Length of the time series.
     Returns
     ----------
-    eta_all:
-        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
-    t_all:
-        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
+    eta_all: npy array
+        Fakequake amplitude in meters. [realization # x gauge x ts length]
+    t_all: npy array
+        Time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
     '''
     
     eta_all = np.zeros((len(rnums), len(gaugenos), npts))
@@ -126,8 +126,8 @@ def proc_data(rnums, gaugenos, outdir = 'fq_time_series', npts = 359):
             gdata = loadmat(gfile)
             
             # skip t=0 point since it is nan
-            t_all[r,m,:]    = gdata['t'].flatten()[1:360]/60  # convert to minutes
-            eta_all[r,m,:]  = gdata['h'].flatten()[1:360]/100  # convert to meters
+            t_all[r,m,:]    = gdata['t'].flatten()[1:npts+1]/60  # convert to minutes
+            eta_all[r,m,:]  = gdata['h'].flatten()[1:npts+1]/100  # convert to meters
     
     return eta_all, t_all
 
@@ -136,20 +136,20 @@ def proc_fcast_data(rnums, gauges, outdir = 'fq_gauge_waveforms', npts = 1441):
     Converts extra fakequake time series used for results comparison from .mat to .npy. 
     Parameters
     ----------
-    rnums: 
-        List of run numbers to convert/process
-    gaugenos: 
-        List of dart buoy gauge numbers in integer
-    outdir:
+     rnums: list
+        Run numbers to convert/process
+    gaugenos: list
+        Integer DART buoy gauge numbers 
+    outdir: str
         Directory containing the .mat files
-    npts:
+    npts: int, default=1441
         Length of the time series.
     Returns
     ----------
-    eta_all:
-        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
-    t_all:
-        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
+    eta_all: npy array
+         Fakequake amplitude in meters. [realization # x gauge x ts length]
+    t_all: npy array 
+        Time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
     '''
     
     eta_all = np.zeros((len(rnums), len(gauges), npts))
@@ -171,9 +171,9 @@ def check_thresh(etas, thresh):
     Check max eta at all 3 gauges for a given realization and threshold
     Parameters
     ----------
-    etas: 
-        2-D npy array containing the wave amplitudes [number of gauges x ts length]
-    thresh:
+    etas: npy array
+        Wave amplitudes [number of gauges x ts length]
+    thresh: int
         Threshold to check realization against.
     Returns
     ----------
@@ -191,13 +191,13 @@ def out_npy(eta,t, name = 'dart', savedir = 'npy'):
     Outputs the wave amplitude and time increments as separate .npy files locally.
     Parameters
     ----------
-    eta:
-        npy array of fakequake amplitude in meters. [realization # x gauge x ts length]
-    t:
-        npy array of time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
-    name:
+    eta: npy array
+        Fakequake amplitude in meters. [realization # x gauge x ts length]
+    t: npy array
+        Time after earthquake corresponding to each entry in eta in minutes. [realization # x gauge x ts length]
+    name: str
         string used in the file name to distinguish between forecast and input time series. 
-    savedir:
+    savedir: str
         Filepath to the directory the arrays are saved to.
     '''
     if not os.path.isdir(savedir):
@@ -212,15 +212,15 @@ def shuffle_data(runs, train_size, test_size, seed, inddir = 'indices'):
     Generates training, validation, and testing sets and outputs run numbers and indices for each set.
     Parameters
     ----------
-    runs:
-        List of run numbers used.
-    train_size:
+    runs: list
+        Run numbers used.
+    train_size: float
         fraction used for training set
-    test_size
+    test_size: float
         fraction used for testing set
-    seed:
+    seed: int
         random seed used to shuffle data
-    inddir:
+    inddir: str
         Filepath to the directory the .txt files are saved to
     '''
     np.random.seed(seed)
@@ -286,37 +286,11 @@ if __name__ == "__main__":
     wtdir = 'the_best_aut_inv_updated_data'
     
     # List of unit sources used in the old name format and sorted alphabetically.
-    unit_sources =['acsza54',\
-         'acsza55',\
-         'acsza56',\
-         'acsza57',\
-         'acsza58',\
-         'acsza59',\
-         'acsza60',\
-         'acsza61',\
-         'acsza62',\
-         'acsza63',\
-         'acsza64',\
-         'acsza65',\
-         'acszb55',\
-         'acszb56',\
-         'acszb57',\
-         'acszb58',\
-         'acszb59',\
-         'acszb60',\
-         'acszb61',\
-         'acszb62',\
-         'acszb63',\
-         'acszb64',\
-         'acszb65',\
-         'acszz55',\
-         'acszz56',\
-         'acszz57',\
-         'acszz58',\
-         'acszz59',\
-         'acszz60',\
-         'acszz61',\
-         'acszz62']
+    ufname = 'unit_sources.csv'
+    if os.path.isfile(ufname):
+        unit_sources = np.genfromtxt(ufname, dtype = 'str').tolist()  
+    else:
+        sys.exit("Error: Unit source file cannot be found.") 
     
     runs_u, runs_e, invs = proc_wts(unit_sources, run_exc_551, wtdir)
     

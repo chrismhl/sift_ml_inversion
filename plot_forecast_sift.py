@@ -19,23 +19,23 @@ def calc_ts(weights, buoy, us_eta, us_t):
     by the provided weights.
     Parameters
     ----------
-    weights:
-        npy array of weights corresponding to the unit sources in us_eta. Assumes weights
+    weights: npy array
+        Weights corresponding to the unit sources in us_eta. Assumes weights
         are in the same order as the sources.
-    buoy:
-        string of buoy name used to access the correct unit sources from the us_eta dict
-    us_eta:
+    buoy: str
+       Buoy name used to access the correct unit sources from the us_eta dict
+    us_eta: dict
         dict where the key is the buoy name and value is the pd dataframe containing
         the wave amplitude response from each individual unit source.
-    us_t:
+    us_t: dict
         dict where the key is the buoy name and value is the pd dataframe containing
         the time steps from each individual unit source.
     Returns
     ----------
-    eta_tmp:
-        npy array of the calculated wave amplitude of the time series
-    t_tmp:
-        npy array of the corresponding time steps to the amplitudes in eta_tmp
+    eta_tmp: npy array
+       Calculated wave amplitude of the time series
+    t_tmp: npy array
+       Corresponding time steps to the amplitudes in eta_tmp
     '''
     eta_buoy = us_eta[buoy]
     t_buoy = us_t[buoy]
@@ -53,13 +53,13 @@ def get_max(arr):
     Returns the max value and its index in a 1-D npy array
     Parameters
     ----------
-    arr:
-        1-D npy array
+    arr: npy array
+        1-D array of values
     Returns
     ----------
-    ind
+    ind: int
         index of the max value
-    amax
+    amax: float
         maximum value
     '''
     amax = np.amax(arr)

@@ -26,23 +26,23 @@ def calc_ts(weights, buoy, us_eta, us_t):
     by the provided weights.
     Parameters
     ----------
-    weights:
-        npy array of weights corresponding to the unit sources in us_eta. Assumes weights
+    weights: npy array
+        Weights corresponding to the unit sources in us_eta. Assumes weights
         are in the same order as the sources.
-    buoy:
-        string of buoy name used to access the correct unit sources from the us_eta dict
-    us_eta:
+    buoy: str
+       Buoy name used to access the correct unit sources from the us_eta dict
+    us_eta: dict
         dict where the key is the buoy name and value is the pd dataframe containing
         the wave amplitude response from each individual unit source.
-    us_t:
+    us_t: dict
         dict where the key is the buoy name and value is the pd dataframe containing
         the time steps from each individual unit source.
     Returns
     ----------
-    eta_tmp:
-        npy array of the calculated wave amplitude of the time series
-    t_tmp:
-        npy array of the corresponding time steps to the amplitudes in eta_tmp
+    eta_tmp: npy array
+       Calculated wave amplitude of the time series
+    t_tmp: npy array
+       Corresponding time steps to the amplitudes in eta_tmp
     '''
     eta_buoy = us_eta[buoy]
     t_buoy = us_t[buoy]
@@ -61,13 +61,13 @@ def plot_rectangular_slip(subfault,ax,cmin_slip,cmax_slip):
     a unit source
     Parameters
     ----------
-    subfault:
-        subfault variable from Geoclaw 
-    ax:
-        matplotlib axes to plot rectangles to
-    cmin_slip:
+    subfault: geoclaw.dtopotools.siftfault
+        subfault from Geoclaw 
+    ax: matplotlib.axes
+         Axis to plot rectangles to
+    cmin_slip: float
         Minimum value for the color bar, all slips below are transparent.
-    cmax_slip:
+    cmax_slip: float
         Maximum value for the color bar
     '''
     x_corners = [subfault.corners[3][0],
@@ -96,15 +96,15 @@ def plot_subfaults(ax, slips, subfault, lat, title):
         Note: Consider moving the axes settings outside of the function
         Parameters
         ----------
-        ax:
-            matplotlib axes to plot rectangles to
-        slips:
-            dict containing subfault name and corresponding slip in meters
-        subfault:
-            subfault variable from Geoclaw 
-        lat:
+        ax: matplotlib.axes
+             Axis to plot rectangles to
+        slips: dict
+            Subfault names and corresponding slip in meters
+        subfault: geoclaw.dtopotools.siftfault
+            subfault from Geoclaw 
+        lat: float
             latitude of the centroid of the slip calculated from the original fq run
-        title:
+        title: str
             title of the plot
         '''
         subfault.set_subfaults(slips)
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         shore = load(shorelines_file)
     
     # Some more variables
-    sfkey = list(eta_us['46404'].columns)
+    sfkey = list(eta_us['46404'].columns) #need to fix this
     sets = ['test', 'train','valid']
     
     # Plot
