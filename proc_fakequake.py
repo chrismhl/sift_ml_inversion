@@ -268,14 +268,24 @@ def shuffle_data(runs, train_size, test_size, seed, inddir = 'indices'):
 if __name__ == "__main__":
     run_range = np.arange(0,1300)
     
+    # read input file
+    in_fpath = 'sift_ml_input.csv'
+    if os.path.isfile(in_fpath):
+         ml_input = pd.read_csv(in_fpath, dtype = {'unit_sources': str, 'dart': str,\
+                                                 'lat_d': np.float64, 'long_d': np.float64,\
+                                                 'extra_forecast': str, 'lat_f': np.float64,\
+                                                 'long_f': np.float64})
+    else:
+        sys.exit("Error: Unit source file cannot be found.")
+    
     # Temporarily excluding realization 551.
     mask = np.ones(len(run_range), dtype=bool)
     mask[[551]] = False
     run_exc_551 = run_range[mask,...]
     
-    gauges = [46404,46407,46419]
-    extra_forecast = ['anch1', 'anch2', 'dart51407', 'hilo1',\
-                      'hilo2', 'sendai1', 'sendai2'] #Omit CSZ for now
+    gauges = ml_input['dart'][ml_input.dart.notnull()].tolist()
+    
+    extra_forecast = ml_input['extra_forecast'][ml_input.extra_forecast.notnull()].tolist() #Omit CSZ for now
     
     # Size of train and test set. Validation set is remainder. Set random seed for reproducibility
     tr_size = 0.7

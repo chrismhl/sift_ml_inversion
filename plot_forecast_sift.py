@@ -68,6 +68,16 @@ def get_max(arr):
     return ind, amax
 
 if __name__ == "__main__":
+    #read input file
+    in_fpath = 'sift_ml_input.csv'
+    if os.path.isfile(in_fpath):
+         ml_input = pd.read_csv(in_fpath, dtype = {'unit_sources': str, 'dart': str,\
+                                                 'lat_d': np.float64, 'long_d': np.float64,\
+                                                 'extra_forecast': str, 'lat_f': np.float64,\
+                                                 'long_f': np.float64})
+    else:
+        sys.exit("Error: Unit source file cannot be found.")
+    
     # Directory to Save plots in
     outdir = "conv_plots_31src_45_300"
     savedir = os.path.join(outdir,'fcast')
@@ -77,7 +87,7 @@ if __name__ == "__main__":
     eta_us = {}
     t_us = {}
 
-    extra_forecast = ['anch1', 'anch2', 'dart51407', 'hilo1','hilo2', 'sendai1', 'sendai2'] #omitted CSZ for now
+    extra_forecast = ml_input['extra_forecast'][ml_input.extra_forecast.notnull()].tolist() #Omit CSZ for now
 
     for name in extra_forecast:
         eta_us[name] = pd.read_csv(os.path.join(dfd,'eta_%s.csv' % name))

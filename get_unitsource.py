@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import sys
 
-def build_url(sources, weights, latlon, base_url):
+def build_url(sources, weights, lat, long, base_url):
     '''
     Extracts the sources and weights from a realization.
     Parameters
@@ -13,8 +13,10 @@ def build_url(sources, weights, latlon, base_url):
         Unit source names
     weights: list
         Weights for the corresponding unit sources
-    latlon: list
-        Buoy latitude (N) and longitude(E) -> [lat, long]
+    lat: float
+        Latitude (N) of buoy/forecast point
+    long: float
+        Longitude (E) of buoy/forecast point
     base: str
         base url
     Returns
@@ -30,19 +32,21 @@ def build_url(sources, weights, latlon, base_url):
     # Building the url for the web API
     unit_source = 'ts=' + '+'.join(weighted_src)
 
-    ltlng = '&lat=%s&lon=%s' % (str(latlon[0]),str(latlon[1]))
+    ltlng = '&lat=%s&lon=%s' % (str(lat),str(long))
 
     url = base_url + unit_source + ltlng
     
     return url
 
-def get_ts(latlon, source, authen, verbose=True):
+def get_ts(lat, long, source, authen, verbose=True):
     '''
     Gets and outputs the time series for weighted sum of unit sources at a given latitude and longtitude
     Parameters
     ----------
-    latlon: list
-        Buoy latitude (N) and longitude(E) -> [lat, long] 
+    lat: float
+        Latitude (N) of buoy/forecast point
+    long: float
+        Longitude (E) of buoy/forecast point
     source: str
         Name of unit source
     authen: Tuple
@@ -61,7 +65,7 @@ def get_ts(latlon, source, authen, verbose=True):
     base = 'https://sift.pmel.noaa.gov/websift/prop?'
     
     # Create URL to access Web API
-    d_url = build_url([source], [1], latlon, base)
+    d_url = build_url([source], [1], lat, long, base)
 
     if verbose:
         print('Downloading time series from SIFT database URL:')
@@ -113,12 +117,18 @@ if __name__ == "__main__":
     # output directory
     outdir = 'unit_src_ts'
     
-    # 31 sources, using Yong's inversions. With exclusions
-    ufname = 'unit_sources.csv'
-    if os.path.isfile(ufname):
-        unit_sources = np.genfromtxt(ufname, dtype = 'str').tolist()  
+    # read input file
+    in_fpath = 'sift_ml_input.csv'
+    if os.path.isfile(in_fpath):
+         ml_input = pd.read_csv(in_fpath, dtype = {'unit_sources': str, 'dart': str,\
+                                                 'lat_d': np.float64, 'long_d': np.float64,\
+                                                 'extra_forecast': str, 'lat_f': np.float64,\
+                                                 'long_f': np.float64})
     else:
         sys.exit("Error: Unit source file cannot be found.")
+    
+    # 31 sources, using Yong's inversions. With exclusions
+    unit_sources = ml_input['unit_sources'][ml_input.unit_sources.notnull()].tolist()
     
     if 0:
         # Convert sources to new name
@@ -127,26 +137,26 @@ if __name__ == "__main__":
             new_src_names.append(oldname[0:2] + oldname[5:] + oldname[4]) 
     
     # DART buoy names
-    dart = ['46404', '46407', '46419']
+    dart = ml_input['dart'][ml_input.dart.notnull()].tolist()
     
     # Extra forecast points, omitted 'csz' point for now
-    extra_forecast = ['anch1', 'anch2', 'dart51407', 'hilo1',\
-                  'hilo2', 'sendai1', 'sendai2']
+    extra_forecast = ml_input['extra_forecast'][ml_input.extra_forecast.notnull()].tolist()
     
     # lat long for buoys 
-    latlong = [[45.8483, 231.225],\
-                   [42.7083, 232.175],\
-                   [48.8066, 230.3778]]
+    latlong_d = np.vstack((ml_input['lat_d'][ml_input.lat_d.notnull()].to_numpy(),\
+                         ml_input['long_d'][ml_input.long_d.notnull()].to_numpy())).T
     
     # lat long for extra forecast
-    latlong_f = [[57.0, 213], [58.5, 209.6], \
-                [19.5558, 203.4641], [20,206], [19.84, 205.06],\
-                [37, 144], [38, 141.5]]
+    latlong_f = np.vstack((ml_input['lat_f'][ml_input.lat_f.notnull()].to_numpy(),\
+                         ml_input['long_f'][ml_input.long_f.notnull()].to_numpy())).T
+    
+    # combine lat long for DARt and forecast
+    latlong = np.vstack((latlong_d,latlong_f))
     
     # SIFT user and password:
     authen = tuple(open('authen.txt').readlines()[0].split(',')[:2])
     
-    if len(dart+extra_forecast) != len(latlong + latlong_f):
+    if len(dart+extra_forecast) != len(latlong):
         sys.exit("Error: Number of points and coordinates do not match")
     
     # Create outer directory
@@ -154,21 +164,22 @@ if __name__ == "__main__":
         os.mkdir(outdir)
     
     # Get unit source and output as pd DataFrame
-    for n,ltlng in enumerate(latlong + latlong_f):
-        buoys = dart+extra_forecast
+    for n,buoy in enumerate(dart+extra_forecast):
+        lat = latlong[n,0]
+        long = latlong[n,1]
         eta_dict = {}
         t_dict = {}
         
         for src in unit_sources:
-            eta, t = get_ts(ltlng, src, authen)
+            eta, t = get_ts(lat, long, src, authen)
             
             eta_dict[src] = eta
             t_dict[src] = t
        
         eta_df = pd.DataFrame(eta_dict)
         t_df = pd.DataFrame(t_dict)
-        fname_e = 'eta_%s.csv' % buoys[n]
-        fname_t = 't_%s.csv' % buoys[n]
+        fname_e = 'eta_%s.csv' % buoy
+        fname_t = 't_%s.csv' % buoy
         
         eta_df.to_csv(os.path.join(outdir,fname_e)\
                       , header=True, index=False)

@@ -134,11 +134,21 @@ def plot_subfaults(ax, slips, subfault, lat, title):
         cb1.ax.tick_params(labelsize=12)
 
 if __name__ == "__main__":
+    # read input file
+    in_fpath = 'sift_ml_input.csv'
+    if os.path.isfile(in_fpath):
+         ml_input = pd.read_csv(in_fpath, dtype = {'unit_sources': str, 'dart': str,\
+                                                 'lat_d': np.float64, 'long_d': np.float64,\
+                                                 'extra_forecast': str, 'lat_f': np.float64,\
+                                                 'long_f': np.float64})
+    else:
+        sys.exit("Error: Unit source file cannot be found.")
+    
     cmap_slip = plt.cm.jet # set colormap for slip plot
     twin = 45 # time window in minutes
     outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
     savedir = os.path.join(outdir,'dart')
-    dart = ['46404', '46407', '46419'] 
+    dart = ml_input['dart'][ml_input.dart.notnull()].tolist()
     
     # load unit source dataframes
     dfd = 'unit_src_ts'
@@ -184,7 +194,7 @@ if __name__ == "__main__":
         shore = load(shorelines_file)
     
     # Some more variables
-    sfkey = list(eta_us['46404'].columns) #need to fix this
+    sfkey = ml_input['unit_sources'][ml_input.unit_sources.notnull()].tolist()
     sets = ['test', 'train','valid']
     
     # Plot
