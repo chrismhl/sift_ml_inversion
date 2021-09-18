@@ -1,6 +1,8 @@
 # Deep Learning for SIFT Unit Source Inversions
 Author: Christopher Liu, University of Washington (UW) Applied Mathematics
 
+NOTE: As of Sept 18, 2021, this README is out of date.
+
 #### Collaborators
 * Randy LeVeque, UW Applied Mathematics
 * Diego Arcas, NOAA Center for Tsunami Research (NCTR)
