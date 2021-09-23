@@ -317,9 +317,11 @@ if __name__ == "__main__":
     shuffle_data(runs_u,tr_size, ts_size,rseed)
     
     out_npy(eta,time)
+    print('FQ DART array created')
     out_npy(eta_f,time_f, name = 'fcast', savedir = 'npy')
+    print('FQ forecast array created')
     
     #note the npy directory is created in out_npy()
     np.save(os.path.join('npy','fq_yong_inv_best.npy'),invs) 
-    
+    print('Unit source weight array created')
 

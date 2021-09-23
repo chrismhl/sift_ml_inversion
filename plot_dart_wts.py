@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_squared_error
 
 import matplotlib.colors as mcolors
 from matplotlib.cm import ScalarMappable
@@ -196,6 +197,7 @@ if __name__ == "__main__":
     # Some more variables
     sfkey = ml_input['unit_sources'][ml_input.unit_sources.notnull()].tolist()
     sets = ['test', 'train','valid']
+    err_all = []
     
     # Plot
     SF = dtopotools.SiftFault()
@@ -211,6 +213,8 @@ if __name__ == "__main__":
         ind_tmp = index[s]
         runs_tmp = runs[s]
         wts_tmp = fq_wts_inv[s]
+        
+        err_all_tmp = np.zeros((2,len(dart),len(runs_tmp)))
         
         # Extract the relevant data
         eta_fq = eta[ind_tmp, :, :]
@@ -236,42 +240,75 @@ if __name__ == "__main__":
 
             # Plot time series for each DART buoy.
             for b,buoy in enumerate(dart):
-                # calculate ts and evs
+                # calculate ts and error
                 eta_i, t_i = calc_ts(wts_tmp[n,:], buoy, eta_us, t_us)
                 eta_t, t_t = calc_ts(target[n,:], buoy, eta_us, t_us)
-                evs = explained_variance_score(eta[r,b,:359],eta_i[:359])
+                err = mean_squared_error(eta[r,b,:359],eta_i[:359])
+                err_all_tmp[0,b,n] = err
+                err_all_tmp[1,b,n] = runs_tmp[n]
             
-                axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240], label = 'FQ Sol')
-                axes[b].plot(t_i[:240]/60,eta_i[:240], label= 'ML Pred')
-                axes[b].plot(t_t[:240]/60,eta_t[:240], label= 'SIFT Auto-Inversion')
-                axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8)
-                axes[b].set_title("Buoy: %s, EVS: %s" % (buoy, str(round(evs,2))))
+#                 axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240], label = 'FQ Sol')
+#                 axes[b].plot(t_i[:240]/60,eta_i[:240], label= 'ML Pred')
+#                 axes[b].plot(t_t[:240]/60,eta_t[:240], label= 'SIFT Auto-Inversion')
+#                 axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8)
+#                 axes[b].set_title("Buoy: %s, MSE: %s" % (buoy, str(round(err,2)))) # Change error label as needed
 
-                if b == 0:
-                    axes[b].legend()
-                elif b == 1:
-                    axes[b].set_ylabel('Height (meters)')
-                elif b == 2:
-                    axes[b].set_xlabel('Time (Hours)')
+#                 if b == 0:
+#                     axes[b].legend()
+#                 elif b == 1:
+#                     axes[b].set_ylabel('Height (meters)')
+#                 elif b == 2:
+#                     axes[b].set_xlabel('Time (Hours)')
 
-            # Plot weights from ML prediction
-            sift_slip = {}
-            for m,k in enumerate(sfkey):
-                sift_slip[k] = wts_tmp[n,m]
+#             # Plot weights from ML prediction
+#             sift_slip = {}
+#             for m,k in enumerate(sfkey):
+#                 sift_slip[k] = wts_tmp[n,m]
 
-            plot_subfaults(axes[-2], sift_slip, SF, fq_lat[runs_tmp[n]], 'ML Pred')
+#             plot_subfaults(axes[-2], sift_slip, SF, fq_lat[runs_tmp[n]], 'ML Pred')
 
-            sift_slip = {s : 0 for s in sfkey}
+#             sift_slip = {s : 0 for s in sfkey}
 
-            # Plot the true weights
-            for m,k in enumerate(sfkey):
-                sift_slip[k] = target[n,m]
+#             # Plot the true weights
+#             for m,k in enumerate(sfkey):
+#                 sift_slip[k] = target[n,m]
 
-            plot_subfaults(axes[-1], sift_slip, SF, fq_lat[runs_tmp[n]], 'LS Inv')
+#             plot_subfaults(axes[-1], sift_slip, SF, fq_lat[runs_tmp[n]], 'LS Inv')
 
-            # Save name
-            fname = 'ml_inv_run%s.png' % str(runs_tmp[n]).zfill(4)
-
-            plt.savefig(os.path.join(plotdir, fname))
+#             # Save name
+#             fname = 'ml_inv_run%s.png' % str(runs_tmp[n]).zfill(4)
+            
+            
+#             plt.savefig(os.path.join(plotdir, fname))
+#             print('Created ',fname)
             fig.clear()
             plt.close(fig)
+        
+        # store error
+        err_all.append(err_all_tmp)
+    
+    # Save error
+    for i in range(len(err_all)):
+        np.save(os.path.join(savedir,'dart_error_%s.npy' % sets[i]), err_all[i])
+    print('Error array saved')
+    
+    # Plot error
+    fig_e, axs_e = plt.subplots(3,1, figsize=(12,26))
+    for i in range(len(err_all)):
+        err_tmp = err_all[i]
+        ax_e = axs_e[i]
+        
+        if i == len(err_all)-1:
+            ax_e.set_xlabel("Run Number")
+        ax_e.set_ylabel("MSE") # Change as needed
+        ax_e.set_title(sets[i])
+        
+        for b,buoy in enumerate(dart):
+            ax_e.plot(err_tmp[1,b,:], err_tmp[0,b,:], '.', markersize = 2,  label = buoy)
+            ax_e.legend()
+            
+    plt.savefig(os.path.join(savedir, 'err_comparison.png'))
+    print('Created error plot')
+    fig_e.clear()
+    plt.close(fig_e)
+        
