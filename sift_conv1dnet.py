@@ -131,13 +131,13 @@ class Conv1DNN_GNSS(nn.Module):
         # try first for only z component
         self.conv1 = nn.Conv1d(self.ngauges, 64, 3, padding=1)  
         self.conv2 = nn.Conv1d(64, 64, 3, padding=1)
-        self.conv3 = nn.Conv1d(64, 128, 3, padding=1)
-        self.conv4 = nn.Conv1d(128, 128, 3, padding=1)
-        self.conv5 = nn.Conv1d(128, 256, 3, padding=1)
-        self.conv6 = nn.Conv1d(128, 256, 3, padding=1)
-        self.conv7 = nn.Conv1d(256, 256, 3, padding=1)
-        self.conv8 = nn.Conv1d(256, 512, 3, padding=1)
-        self.conv9 = nn.Conv1d(512, 512, 3, padding=1)
+        self.conv3 = nn.Conv1d(64, 64, 3, padding=1)
+        self.conv4 = nn.Conv1d(64, 96, 3, padding=1)
+        self.conv5 = nn.Conv1d(96, 96, 3, padding=1)
+        self.conv6 = nn.Conv1d(96, 96, 3, padding=1)
+        self.conv7 = nn.Conv1d(96, 128, 3, padding=1)
+        self.conv8 = nn.Conv1d(128, 128, 3, padding=1)
+        self.conv9 = nn.Conv1d(128, 128, 3, padding=1)
 
         self.pool = nn.MaxPool1d(2, 2) # size = 2, stride = 2
         
@@ -148,43 +148,36 @@ class Conv1DNN_GNSS(nn.Module):
         
         # Input dimension needs to be consistent with output dimension
         # of the last conv layer
-        self.lin = nn.Linear(512, 256, bias=True)
-        self.lin2 = nn.Linear(256,128, bias=True)
-        self.lin3 = nn.Linear(128,64, bias=True)
-        self.lin4 = nn.Linear(64,nsources, bias=True)
+        self.lin = nn.Linear(128,64, bias=True)
+        self.lin2 = nn.Linear(64,nsources, bias=True)
         
     def forward(self, x):
         
-        # Was testing swish vs leaky relu.
-        if 1:
-            x = self.lrelu(self.conv1(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv2(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv3(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv4(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv5(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv6(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv7(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv8(x))
-            x = self.pool(x)
-            x = self.lrelu(self.conv9(x))
-            x = self.pool(x)
-        
+
+        x = self.lrelu(self.conv1(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv2(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv3(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv4(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv5(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv6(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv7(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv8(x))
+        x = self.pool(x)
+        x = self.lrelu(self.conv9(x))
+        x = self.pool(x)
         
         x = torch.squeeze(x)
         
         x = self.lin(x)
         x = self.drop(x)
         x = self.lin2(x)
-        x = self.lin3(x)
-        x = self.drop(x)
-        x = self.lin4(x)
         x = self.relu(x)
         
         return x    
