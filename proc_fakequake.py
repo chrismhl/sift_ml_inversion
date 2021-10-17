@@ -85,12 +85,14 @@ def proc_wts(sources, rnums, outdir):
                     slip[oldname] = float(wt)
                 
             inversions[n,:] = np.array(list(slip.values()))
+            print('Run #%s saved' % rnum)
             
             # Reset dictionary
             slip = {s:0 for s in slip}
 
             n+=1
         except FileNotFoundError:
+            print('Run #%s not found' % rnum)
             not_used.append(rnum)
         
     return runs_used, not_used, inversions

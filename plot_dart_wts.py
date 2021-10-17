@@ -147,8 +147,9 @@ if __name__ == "__main__":
     
     cmap_slip = plt.cm.jet # set colormap for slip plot
     twin = 45 # time window in minutes
-    outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
-    savedir = os.path.join(outdir,'dart')
+    #outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
+    outdir = 'gnss_test'
+    savedir = os.path.join(outdir,'dart_180')
     dart = ml_input['dart'][ml_input.dart.notnull()].tolist()
     
     # load unit source dataframes
@@ -166,9 +167,9 @@ if __name__ == "__main__":
 
     # Load weights
     fq_wts_true = np.load(os.path.join(npyd,'fq_yong_inv_best.npy'))
-    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_wts_test_300.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_wts_train_300.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_wts_valid_300.npy'))]
+    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_180.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_180.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_180.npy'))]
     
     # Load indices
     inddir = 'indices'
@@ -223,7 +224,10 @@ if __name__ == "__main__":
 
         if not os.path.isdir(plotdir):
             os.mkdir(plotdir)
-
+        
+        print('Plotting ' + name + ' set')
+        print('--------------')
+        
         for n,r in enumerate(ind_tmp):
             #Create subplots/grid
             fig = plt.figure(constrained_layout=True, clear = True, figsize=(28,16))
@@ -243,44 +247,44 @@ if __name__ == "__main__":
                 # calculate ts and error
                 eta_i, t_i = calc_ts(wts_tmp[n,:], buoy, eta_us, t_us)
                 eta_t, t_t = calc_ts(target[n,:], buoy, eta_us, t_us)
-                err = mean_squared_error(eta[r,b,:359],eta_i[:359])
+                err = explained_variance_score(eta[r,b,:359],eta_i[:359])
                 err_all_tmp[0,b,n] = err
                 err_all_tmp[1,b,n] = runs_tmp[n]
             
-#                 axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240], label = 'FQ Sol')
-#                 axes[b].plot(t_i[:240]/60,eta_i[:240], label= 'ML Pred')
-#                 axes[b].plot(t_t[:240]/60,eta_t[:240], label= 'SIFT Auto-Inversion')
-#                 axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8)
-#                 axes[b].set_title("Buoy: %s, MSE: %s" % (buoy, str(round(err,2)))) # Change error label as needed
+                axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240], label = 'FQ Sol')
+                axes[b].plot(t_i[:240]/60,eta_i[:240], label= 'ML Pred')
+                axes[b].plot(t_t[:240]/60,eta_t[:240], label= 'SIFT Auto-Inversion')
+                axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8)
+                axes[b].set_title("Buoy: %s, MSE: %s" % (buoy, str(round(err,2)))) # Change error label as needed
 
-#                 if b == 0:
-#                     axes[b].legend()
-#                 elif b == 1:
-#                     axes[b].set_ylabel('Height (meters)')
-#                 elif b == 2:
-#                     axes[b].set_xlabel('Time (Hours)')
+                if b == 0:
+                    axes[b].legend()
+                elif b == 1:
+                    axes[b].set_ylabel('Height (meters)')
+                elif b == 2:
+                    axes[b].set_xlabel('Time (Hours)')
 
-#             # Plot weights from ML prediction
-#             sift_slip = {}
-#             for m,k in enumerate(sfkey):
-#                 sift_slip[k] = wts_tmp[n,m]
+            # Plot weights from ML prediction
+            sift_slip = {}
+            for m,k in enumerate(sfkey):
+                sift_slip[k] = wts_tmp[n,m]
 
-#             plot_subfaults(axes[-2], sift_slip, SF, fq_lat[runs_tmp[n]], 'ML Pred')
+            plot_subfaults(axes[-2], sift_slip, SF, fq_lat[runs_tmp[n]], 'ML Pred')
 
-#             sift_slip = {s : 0 for s in sfkey}
+            sift_slip = {s : 0 for s in sfkey}
 
-#             # Plot the true weights
-#             for m,k in enumerate(sfkey):
-#                 sift_slip[k] = target[n,m]
+            # Plot the true weights
+            for m,k in enumerate(sfkey):
+                sift_slip[k] = target[n,m]
 
-#             plot_subfaults(axes[-1], sift_slip, SF, fq_lat[runs_tmp[n]], 'LS Inv')
+            plot_subfaults(axes[-1], sift_slip, SF, fq_lat[runs_tmp[n]], 'LS Inv')
 
-#             # Save name
-#             fname = 'ml_inv_run%s.png' % str(runs_tmp[n]).zfill(4)
+            # Save name
+            fname = 'ml_inv_run%s.png' % str(runs_tmp[n]).zfill(4)
             
             
-#             plt.savefig(os.path.join(plotdir, fname))
-#             print('Created ',fname)
+            plt.savefig(os.path.join(plotdir, fname))
+            print('Created ',fname)
             fig.clear()
             plt.close(fig)
         
@@ -300,7 +304,7 @@ if __name__ == "__main__":
         
         if i == len(err_all)-1:
             ax_e.set_xlabel("Run Number")
-        ax_e.set_ylabel("MSE") # Change as needed
+        ax_e.set_ylabel("EVS") # Change as needed
         ax_e.set_title(sets[i])
         
         for b,buoy in enumerate(dart):
