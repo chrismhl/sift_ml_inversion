@@ -127,7 +127,7 @@ class Conv1DNN_GNSS(nn.Module):
 
         self.ngauges = ngauges # Number of input channels
         self.nsources = nsources # Output dimension, number of unit sources
-        if 1:
+        if 0:
             # try first for only z component
             self.conv1 = nn.Conv1d(self.ngauges, 96, kernel_size=3, padding=1, bias = False)  
             self.conv2 = nn.Conv1d(96, 96, kernel_size=3, padding=1, bias = False)
@@ -179,7 +179,7 @@ class Conv1DNN_GNSS(nn.Module):
             self.pconv1 = nn.Conv1d(128,64, kernel_size=1, padding=0, stride =1)
             self.pconv2 = nn.Conv1d(64,nsources, kernel_size=1, padding=0, stride =1)
             
-        if 0:
+        if 1:
             self.conv1 = nn.Conv1d(self.ngauges, 96, kernel_size=3, padding=1)  
             self.conv2 = nn.Conv1d(96, 96, kernel_size=3, padding=1)
             self.conv3 = nn.Conv1d(96, 96, kernel_size=3, padding=1)
@@ -204,7 +204,7 @@ class Conv1DNN_GNSS(nn.Module):
         
     def forward(self, x):
        
-        if 1: # this sucks
+        if 0: # this sucks
             x = self.lrelu(self.batch64_1(self.conv1(x)))
             x = self.pool(x)
             x = self.lrelu(self.batch64_2(self.conv2(x)))
@@ -241,7 +241,7 @@ class Conv1DNN_GNSS(nn.Module):
             x = self.lrelu(self.batch7(self.conv7(x)))
             x = self.sconv7(x)
             
-        if 0:
+        if 1:
             x = self.lrelu(self.conv1(x))
             x = self.pool(x)
             x = self.lrelu(self.conv2(x))

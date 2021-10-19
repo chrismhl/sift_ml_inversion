@@ -96,6 +96,41 @@ def proc_wts(sources, rnums, outdir):
             not_used.append(rnum)
         
     return runs_used, not_used, inversions
+
+def calc_ts(weights, buoy, us_eta, us_t):
+    '''
+    Calculates the time series from a linear combination of the unit sources as specified
+    by the provided weights.
+    Parameters
+    ----------
+    weights: npy array
+        Weights corresponding to the unit sources in us_eta. Assumes weights
+        are in the same order as the sources.
+    buoy: str
+       Buoy name used to access the correct unit sources from the us_eta dict
+    us_eta: dict
+        dict where the key is the buoy name and value is the pd dataframe containing
+        the wave amplitude response from each individual unit source.
+    us_t: dict
+        dict where the key is the buoy name and value is the pd dataframe containing
+        the time steps from each individual unit source.
+    Returns
+    ----------
+    eta_tmp: npy array
+       Calculated wave amplitude of the time series
+    t_tmp: npy array
+       Corresponding time steps to the amplitudes in eta_tmp
+    '''
+    eta_buoy = us_eta[buoy]
+    t_buoy = us_t[buoy]
+    
+    eta_tmp = np.zeros(eta_buoy.shape[0])
+    t_tmp = t_buoy.iloc[:,0].to_numpy()
+    
+    for n, wt in enumerate(weights):
+        eta_tmp = eta_tmp + wt * eta_buoy.iloc[:,n].to_numpy()
+
+    return eta_tmp, t_tmp
     
 def proc_data(rnums, gaugenos, outdir = 'fq_time_series', npts = 359):
     '''
@@ -304,10 +339,28 @@ if __name__ == "__main__":
     else:
         sys.exit("Error: Unit source file cannot be found.") 
     
+    # load unit source dataframes
+    dfd = 'unit_src_ts'
+    eta_us = {}
+    t_us = {}
+    for name in gauges:
+        eta_us[name] = pd.read_csv(os.path.join(dfd,'eta_%s.csv' % name))
+        t_us[name] = pd.read_csv(os.path.join(dfd,'t_%s.csv' % name))
+    
+    # Process unit source weights
     runs_u, runs_e, invs = proc_wts(unit_sources, run_exc_551, wtdir)
     
+    # Process time series
     eta, time = proc_data(runs_u,gauges)
     eta_f, time_f = proc_fcast_data(runs_u, extra_forecast)
+    
+    # Calculate TS from weights as additional target set
+    fq_eta_wt_ts = np.zeros((len(invs),3,1440))
+    fq_t_wt_ts = np.zeros((len(invs),3,1440))
+    
+    for i in range(len(invs)):
+        for n, name in enumerate(gauges):
+            fq_eta_wt_ts[i,n,:], fq_t_wt_ts[i,n,:] = calc_ts(invs[i,:], name, eta_us, t_us)
     
     if 0:
         # Filter runs based on max amplitude at input gauges
@@ -316,12 +369,16 @@ if __name__ == "__main__":
             if check_thresh(eta[r,:,:],0.1):
                 filt_runs.append(r)
     
+    # Shuffle data
     shuffle_data(runs_u,tr_size, ts_size,rseed)
     
+    # Output data
     out_npy(eta,time)
     print('FQ DART array created')
     out_npy(eta_f,time_f, name = 'fcast', savedir = 'npy')
     print('FQ forecast array created')
+    out_npy(fq_eta_wt_ts,fq_t_wt_ts, name = 'wt', savedir = 'npy')
+    print('FQ time series target array created')
     
     #note the npy directory is created in out_npy()
     np.save(os.path.join('npy','fq_yong_inv_best.npy'),invs) 
