@@ -148,8 +148,8 @@ if __name__ == "__main__":
     cmap_slip = plt.cm.jet # set colormap for slip plot
     twin = 45 # time window in minutes
     #outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
-    outdir = 'gnss_test'
-    savedir = os.path.join(outdir,'dart_180')
+    outdir = 'gnss_ts'
+    savedir = os.path.join(outdir,'dart_250')
     dart = ml_input['dart'][ml_input.dart.notnull()].tolist()
     
     # load unit source dataframes
@@ -167,9 +167,9 @@ if __name__ == "__main__":
 
     # Load weights
     fq_wts_true = np.load(os.path.join(npyd,'fq_yong_inv_best.npy'))
-    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_180.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_180.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_180.npy'))]
+    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_ts_250.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_ts_250.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_ts_250.npy'))]
     
     # Load indices
     inddir = 'indices'

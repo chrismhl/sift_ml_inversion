@@ -122,11 +122,12 @@ class Conv1DNN_30(nn.Module):
         return x
     
 class Conv1DNN_GNSS(nn.Module):
-    def __init__(self, ngauges, nsources):
+    def __init__(self, ngauges, nsources, eta_us):
         super().__init__()
 
         self.ngauges = ngauges # Number of input channels
         self.nsources = nsources # Output dimension, number of unit sources
+        self.usts = eta_us.requires_grad_(False) # unit source response
         if 0:
             # try first for only z component
             self.conv1 = nn.Conv1d(self.ngauges, 96, kernel_size=3, padding=1, bias = False)  
@@ -264,8 +265,12 @@ class Conv1DNN_GNSS(nn.Module):
         x = self.pconv1(x)
         x = self.pconv2(x)
         x = torch.squeeze(x)
-        x = self.relu(x)
-            
+        x = torch.transpose(self.relu(x),0,1)
+        
+        x = torch.stack([torch.transpose(torch.matmul(self.usts[:,0,:], x),0,1),\
+                        torch.transpose(torch.matmul(self.usts[:,1,:], x),0,1),\
+                        torch.transpose(torch.matmul(self.usts[:,2,:], x),0,1)],\
+                       dim = 1)  
         return x    
 
 # Try Donsub
