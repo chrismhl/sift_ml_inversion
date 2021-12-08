@@ -273,68 +273,39 @@ class Conv1DNN_GNSS(nn.Module):
                        dim = 1)  
         return x    
 
-# Try Donsub
-class Conv1DNN_GNSS_enc(nn.Module):
-    def __init__(self, ninput, noutput):
+class Conv1DNN_GNSS_RNN(nn.Module):
+    def __init__(self, ninput, noutput, layer_dim, hidden_dim, eta_us):
+        
         super().__init__()
-
-        # encoder input 
-        self.conv1 = nn.Conv1d(ninput, 64, 3, padding=1)  
-        self.conv2 = nn.Conv1d( 64,  64, 3, padding=1)  
-        self.conv3 = nn.Conv1d( 64, 128, 3, padding=1)
-        self.conv4 = nn.Conv1d(128, 128, 3, padding=1)
-        self.conv5 = nn.Conv1d(128, 128, 3, padding=1)
-        self.conv6 = nn.Conv1d(128, 256, 3, padding=1)
-        self.conv7 = nn.Conv1d(256, 256, 3, padding=1)
-        self.conv8 = nn.Conv1d(256, 512, 3, padding=1)
-        self.conv9 = nn.Conv1d(512, 512, 3, padding=1)
-
-        self.pool = nn.MaxPool1d(2, 2)
-        self.lrelu = nn.LeakyReLU(negative_slope=0.5)
-
-        # decoder
-        self.t_conv1 = nn.ConvTranspose1d(512, 512, 2, stride=2)
-        self.t_conv2 = nn.ConvTranspose1d(512, 256, 2, stride=2)
-        self.t_conv3 = nn.ConvTranspose1d(256, 256, 2, stride=2)
-        self.t_conv4 = nn.ConvTranspose1d(256, 128, 2, stride=2)
-        self.t_conv5 = nn.ConvTranspose1d(128, 128, 2, stride=2)
-        self.t_conv6 = nn.ConvTranspose1d(128,  64, 2, stride=2)
-        self.t_conv7 = nn.ConvTranspose1d( 64,  64, 2, stride=2)
-        self.t_conv8 = nn.ConvTranspose1d( 64, 1, 2, stride=2)
+        self.ninput = ninput # number of input sensors
+        self.noutput = noutput # dim output weights
+        self.layer_dim = layer_dim
+        self.hidden_dim = hidden_dim
+        self.usts = eta_us.requires_grad_(False) # unit source response
+        
+        # LSTM/RNN
+        self.rnn = nn.LSTM(input_size = ninput, hidden_size = hidden_dim,\
+                           num_layers = layer_dim, batch_first=True, dropout = 0)
         
         # output block
-        self.lin = nn.Linear(256,noutput, bias=True)
+        self.lin = nn.Linear(hidden_dim, noutput, bias=True)
         self.relu = nn.ReLU() 
 
     def forward(self, x):
-        x = self.lrelu(self.conv1(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv2(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv3(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv4(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv5(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv6(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv7(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv8(x))
-        x = self.pool(x)
-        x = self.lrelu(self.conv9(x))
-        x = self.pool(x)
-
-        x = self.lrelu(self.t_conv1(x))
-        x = self.lrelu(self.t_conv2(x))
-        x = self.lrelu(self.t_conv3(x))
-        x = self.lrelu(self.t_conv4(x))
-        x = self.lrelu(self.t_conv5(x))
-        x = self.lrelu(self.t_conv6(x))
-        x = self.lrelu(self.t_conv7(x))
-        x = self.lrelu(self.t_conv8(x))
+        batch_size = x.shape[0]
+        h0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_()
+        c0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_()
         
-        x = torch.squeeze(x)
-        x = self.relu(self.lin(x))
-        return x
+        out, (hn, cn) = self.rnn(x, (h0, c0))
+        out = self.lin(out[:, -1, :])
+        out = self.relu(out)
+        
+        if 1:
+            out = torch.transpose(self.relu(out),0,1)
+        
+            out = torch.stack([torch.transpose(torch.matmul(self.usts[:,0,:], out),0,1),\
+                        torch.transpose(torch.matmul(self.usts[:,1,:], out),0,1),\
+                        torch.transpose(torch.matmul(self.usts[:,2,:], out),0,1)],\
+                       dim = 1)    
+        
+        return out

@@ -30,8 +30,8 @@ stations = ['P316', 'albh', 'bamf', 'bend', 'bils', 'cabl', 'chzz', 'cski', 'dds
 'reed', 'sc02', 'sc03', 'seas', 'seat', 'tfno', 'thun', 'till', 'trnd', 'uclu', 
 'ufda', 'wdcb', 'ybhb']
 
-components = ['Z']
-#components = ['N', 'E', 'Z']
+#components = ['Z']
+components = ['N', 'E', 'Z']
 t_len = 512 #seconds
 
 if not os.path.isdir(outdir):
@@ -51,8 +51,9 @@ for r, runno in enumerate(runnos):
             gnss_eta[r, channel_index,:] = LY.data 
             
             channel_index = channel_index + 1
-
-
-np.save(os.path.join(outdir,'gnss_eta_z.npy'), gnss_eta)
+    
+    print('Processed run %s' % runno)
+    
+np.save(os.path.join(outdir,'gnss_eta_all.npy'), gnss_eta)
 print('GNSS array created')
     

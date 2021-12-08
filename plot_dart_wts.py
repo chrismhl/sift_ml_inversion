@@ -114,7 +114,7 @@ def plot_subfaults(ax, slips, subfault, lat, title):
         ax.axhline(y=lat, xmin=0, xmax=1, color ='red', ls='--', lw=1, alpha = 0.8)
         ax.set_aspect(1./np.cos(45*np.pi/180.))
         ax.axis([226,238,40.5,54.5]) # Plot ranges for axes
-        ax.set_title('%s, Mw = %.2f' % (title, subfault.Mw()), fontsize=15)
+        ax.set_title('%s, Mw = %.2f' % (title, subfault.Mw()), fontsize=18)
         
         # Color bar range
         cmin_slip = 0.01  # min slip to plot, smaller values will be transparent
@@ -148,8 +148,8 @@ if __name__ == "__main__":
     cmap_slip = plt.cm.jet # set colormap for slip plot
     twin = 45 # time window in minutes
     #outdir = 'conv_plots_31src_%s_300' % str(twin) #sources, time window, epochs
-    outdir = 'gnss_ts'
-    savedir = os.path.join(outdir,'dart_250')
+    outdir = 'gnss_lstm'
+    savedir = os.path.join(outdir,'dart_400_1l_agu')
     dart = ml_input['dart'][ml_input.dart.notnull()].tolist()
     
     # load unit source dataframes
@@ -167,9 +167,9 @@ if __name__ == "__main__":
 
     # Load weights
     fq_wts_true = np.load(os.path.join(npyd,'fq_yong_inv_best.npy'))
-    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_ts_250.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_ts_250.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_ts_250.npy'))]
+    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_400_rnn_1l.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_400_rnn_1l.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_400_rnn_1l.npy'))]
     
     # Load indices
     inddir = 'indices'
@@ -197,7 +197,8 @@ if __name__ == "__main__":
     
     # Some more variables
     sfkey = ml_input['unit_sources'][ml_input.unit_sources.notnull()].tolist()
-    sets = ['test', 'train','valid']
+    # sets = ['test', 'train','valid']
+    sets = ['test']
     err_all = []
     
     # Plot
@@ -240,7 +241,7 @@ if __name__ == "__main__":
                     ]
 
             # Super title for plot
-            fig.suptitle('Run # %s' % str(runs_tmp[n]), fontsize=20,)
+            fig.suptitle('Run # %s' % str(runs_tmp[n]), fontsize=24)
 
             # Plot time series for each DART buoy.
             for b,buoy in enumerate(dart):
@@ -251,18 +252,20 @@ if __name__ == "__main__":
                 err_all_tmp[0,b,n] = err
                 err_all_tmp[1,b,n] = runs_tmp[n]
             
-                axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240], label = 'FQ Sol')
-                axes[b].plot(t_i[:240]/60,eta_i[:240], label= 'ML Pred')
-                axes[b].plot(t_t[:240]/60,eta_t[:240], label= 'SIFT Auto-Inversion')
-                axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8)
-                axes[b].set_title("Buoy: %s, MSE: %s" % (buoy, str(round(err,2)))) # Change error label as needed
-
+                axes[b].plot(t_fq[n,b,:240]/60,eta_fq[n,b,:240],  'k--', label = 'Fakequake (True) Solution', linewidth = 2)
+                axes[b].plot(t_i[:240]/60,eta_i[:240], 'r-', label= 'ML Prediction (GNSS)', linewidth = 2)
+                axes[b].plot(t_t[:240]/60,eta_t[:240], 'g-', label= 'SIFT Auto-Inversion (DART)', linewidth = 2)
+                #axes[b].axvline(x=twin/60, ymin=0, ymax=1, color ='red', ls='--', lw=1, alpha = 0.8) # Vertical red line for twindow
+                axes[b].set_title("Buoy: %s, MSE: %s" % (buoy, str(round(err,2))), fontsize = 18) # Change error label as needed
+                
+                for label in (axes[b].get_xticklabels() + axes[b].get_yticklabels()):
+                    label.set_fontsize(18)
                 if b == 0:
-                    axes[b].legend()
+                    axes[b].legend(fontsize = 18)
                 elif b == 1:
-                    axes[b].set_ylabel('Height (meters)')
+                    axes[b].set_ylabel('Height (meters)', fontsize = 14)
                 elif b == 2:
-                    axes[b].set_xlabel('Time (Hours)')
+                    axes[b].set_xlabel('Time (Hours)', fontsize = 14)
 
             # Plot weights from ML prediction
             sift_slip = {}

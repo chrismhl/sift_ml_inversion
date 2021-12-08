@@ -65,6 +65,9 @@ def get_max(arr):
     amax = np.amax(arr)
     ind = np.where(arr == amax)[0]
     
+    if len(ind) > 1:
+        return ind[0], amax
+    
     return ind, amax
 
 if __name__ == "__main__":
@@ -79,7 +82,7 @@ if __name__ == "__main__":
         sys.exit("Error: Unit source file cannot be found.")
     
     # Directory to Save plots in
-    outdir = "conv_plots_31src_45_300"
+    outdir = "gnss_lstm\dart_400_1l"
     savedir = os.path.join(outdir,'fcast')
 
     # load unit source dataframes
@@ -100,9 +103,9 @@ if __name__ == "__main__":
 
     # Load weights
     fq_wts_true = np.load(os.path.join(npyd,'fq_yong_inv_best.npy'))
-    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_wts_test_300.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_wts_train_300.npy')),\
-                  np.load(os.path.join(npyd,'fq_conv1d_wts_valid_300.npy'))]
+    fq_wts_inv = [np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_test_400_rnn_1l.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_train_400_rnn_1l.npy')),\
+                  np.load(os.path.join(npyd,'fq_conv1d_gnss_wts_valid_400_rnn_1l.npy'))]
 
     # Load indices, not all used
     inddir = 'indices'
@@ -231,6 +234,7 @@ if __name__ == "__main__":
         fig.show() # not sure if i need this in a script
         plt.tight_layout()
         plt.savefig(os.path.join(savedir, 'scatter_%s.png' % setn))
+        print('Created scatter_%s.png' % setn)
         fig.clear()
         plt.close(fig)
 
@@ -259,16 +263,16 @@ if __name__ == "__main__":
                                 true[twin[0]:twin[1]],
                                 )
 
-                line1, = ax.plot(auto_t[twin[0]:twin[1]], 
-                                 auto[twin[0]:twin[1]],
+                line1, = ax.plot(nn_t[twin[0]:twin[1]], 
+                                 nn[twin[0]:twin[1]],
                                 )
-                line2, = ax.plot(nn_t[twin[0]:twin[1]],
-                                 nn[twin[0]:twin[1]]
+                line2, = ax.plot(auto_t[twin[0]:twin[1]],
+                                 auto[twin[0]:twin[1]]
                                 )
 
 
                 legends = [[ line0,   line1, line2],
-                           ['FQ Sol.','Auto Inv.', 'Neural Net']]
+                           ['FQ Sol.','ML Pred','SIFT Auto-Inversion']]
 
                 ax.legend(legends[0], legends[1])
                 ax.set_xlabel("Time After Earthquake (Minutes)")
@@ -281,5 +285,6 @@ if __name__ == "__main__":
 
             fname = 'fq%s_forecast.png' % str(rnum).zfill(6)
             plt.savefig(os.path.join(plotdir, fname))
+            print('Created ',fname)
             fig.clear()
             plt.close(fig)
