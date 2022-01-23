@@ -284,23 +284,25 @@ class Conv1DNN_GNSS_RNN(nn.Module):
         self.usts = eta_us.requires_grad_(False) # unit source response
         
         # LSTM/RNN
-        self.rnn = nn.LSTM(input_size = ninput, hidden_size = hidden_dim,\
-                           num_layers = layer_dim, batch_first=True, dropout = 0)
+        self.rnn = nn.LSTM(input_size = self.ninput, hidden_size = self.hidden_dim,\
+                           num_layers = self.layer_dim, batch_first=True, dropout = 0.3)
         
         # output block
-        self.lin = nn.Linear(hidden_dim, noutput, bias=True)
+        self.lin = nn.Linear(self.hidden_dim, int(np.round(self.hidden_dim/2)), bias=True)
+        self.lin2 = nn.Linear(int(np.round(self.hidden_dim/2)), self.noutput, bias = True)
         self.relu = nn.ReLU() 
 
     def forward(self, x):
         batch_size = x.shape[0]
-        h0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_()
-        c0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_()
+        h0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_().cuda()
+        c0 = torch.zeros(self.layer_dim, batch_size, self.hidden_dim).requires_grad_().cuda()
         
         out, (hn, cn) = self.rnn(x, (h0, c0))
         out = self.lin(out[:, -1, :])
+        out = self.lin2(out)
         out = self.relu(out)
         
-        if 1:
+        if 0:
             out = torch.transpose(self.relu(out),0,1)
         
             out = torch.stack([torch.transpose(torch.matmul(self.usts[:,0,:], out),0,1),\
